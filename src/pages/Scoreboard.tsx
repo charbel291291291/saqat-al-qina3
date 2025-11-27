@@ -1,160 +1,295 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { ArrowRight, TrendingUp, TrendingDown, Award, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { TrendingUp, TrendingDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 
+interface Official {
+  id: string;
+  name: string;
+  position: string;
+  region: string;
+  image_url: string | null;
+  overall_score: number | null;
+  response_speed_score: number | null;
+  respect_score: number | null;
+  execution_score: number | null;
+  followup_score: number | null;
+  institution: {
+    name: string;
+    type: string;
+  } | null;
+}
+
 const Scoreboard = () => {
-  const topOfficials = [
-    { rank: 1, name: "بلدية جونيه", score: 18, speed: 5, execution: 5, followup: 4, respect: 4 },
-    { rank: 2, name: "بلدية برج حمود", score: 16, speed: 4, execution: 5, followup: 4, respect: 3 },
-    { rank: 3, name: "بلدية بيت مري", score: 15, speed: 4, execution: 4, followup: 4, respect: 3 },
-  ];
+  const [officials, setOfficials] = useState<Official[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRegion, setSelectedRegion] = useState<string>('all');
 
-  const bottomOfficials = [
-    { rank: 1, name: "بلدية طرابلس", score: 4, speed: 1, execution: 1, followup: 1, respect: 1 },
-    { rank: 2, name: "بلدية صور", score: 5, speed: 1, execution: 2, followup: 1, respect: 1 },
-    { rank: 3, name: "بلدية بعلبك", score: 6, speed: 2, execution: 1, followup: 2, respect: 1 },
-  ];
+  useEffect(() => {
+    fetchOfficials();
 
-  const getScoreColor = (score: number) => {
-    if (score >= 15) return "text-green-500";
-    if (score >= 10) return "text-yellow-500";
-    return "text-alert";
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('officials-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'officials',
+        },
+        () => {
+          fetchOfficials();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchOfficials = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('officials')
+      .select(`
+        *,
+        institutions (
+          name,
+          type
+        )
+      `)
+      .order('overall_score', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching officials:', error);
+    } else {
+      const mappedData: Official[] = (data || []).map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        position: item.position,
+        region: item.region,
+        image_url: item.image_url,
+        overall_score: item.overall_score,
+        response_speed_score: item.response_speed_score,
+        respect_score: item.respect_score,
+        execution_score: item.execution_score,
+        followup_score: item.followup_score,
+        institution: item.institutions,
+      }));
+      setOfficials(mappedData);
+    }
+    setLoading(false);
   };
 
-  return (
-    <div className="min-h-screen bg-background font-cairo">
-      {/* Navigation */}
-      <nav className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="سقط القناع" className="h-12 w-12" />
-            <div>
-              <h1 className="text-xl font-bold text-foreground">سقط القناع</h1>
-              <p className="text-xs text-muted-foreground">Saqat Al Qina3</p>
+  const regions = [
+    { value: 'all', label: 'جميع المناطق' },
+    { value: 'beirut', label: 'بيروت' },
+    { value: 'mount_lebanon', label: 'جبل لبنان' },
+    { value: 'north', label: 'الشمال' },
+    { value: 'south', label: 'الجنوب' },
+    { value: 'bekaa', label: 'البقاع' },
+    { value: 'nabatieh', label: 'النبطية' },
+  ];
+
+  const filteredOfficials = selectedRegion === 'all' 
+    ? officials 
+    : officials.filter(o => o.region === selectedRegion);
+
+  const topPerformers = filteredOfficials.slice(0, 10);
+  const poorPerformers = [...filteredOfficials]
+    .sort((a, b) => (a.overall_score || 0) - (b.overall_score || 0))
+    .slice(0, 10);
+
+  const getScoreColor = (score: number | null) => {
+    if (!score) return 'text-muted-foreground';
+    if (score >= 15) return 'text-green-500';
+    if (score >= 10) return 'text-yellow-500';
+    return 'text-red-500';
+  };
+
+  const getScoreLabel = (score: number | null) => {
+    if (!score) return 'غير متاح';
+    return `${score}/20`;
+  };
+
+  const OfficialCard = ({ official, rank }: { official: Official; rank: number }) => (
+    <Card className="hover:border-primary/50 transition-colors">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="flex-shrink-0">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
+              {rank}
             </div>
-          </Link>
-          <Link to="/cases">
-            <Button variant="ghost" size="sm">استعرض القضايا</Button>
-          </Link>
-        </div>
-      </nav>
-
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-3">مؤشر الاستجابة الشعبية</h1>
-          <p className="text-lg text-muted-foreground">ترتيب المسؤولين والجهات الرسمية بناءً على أدائهم</p>
-        </div>
-
-        {/* Scoring Legend */}
-        <Card className="bg-card border-border mb-12">
-          <CardHeader>
-            <CardTitle className="text-center">معايير التقييم (من 20)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          </div>
+          
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">سرعة الاستجابة</p>
-                <p className="text-2xl font-bold text-foreground">5</p>
+                <h3 className="font-bold text-lg text-foreground">{official.name}</h3>
+                <p className="text-sm text-muted-foreground">{official.position}</p>
+                {official.institution && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {official.institution.name}
+                  </p>
+                )}
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">تنفيذ الحل</p>
-                <p className="text-2xl font-bold text-foreground">5</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">المتابعة</p>
-                <p className="text-2xl font-bold text-foreground">5</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">الاحترام</p>
-                <p className="text-2xl font-bold text-foreground">5</p>
+              <div className="flex flex-col items-end gap-1">
+                <Badge variant="outline">{regions.find(r => r.value === official.region)?.label}</Badge>
+                <div className={`text-2xl font-bold ${getScoreColor(official.overall_score)}`}>
+                  {getScoreLabel(official.overall_score)}
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Top 10 Cooperative Officials */}
-        <div className="mb-12">
-          <Card className="bg-card border-green-500/50">
-            <CardHeader>
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <TrendingUp className="h-6 w-6 text-green-500" />
-                <CardTitle className="text-2xl text-center">أكثر 10 مسؤولين تجاوبًا</CardTitle>
+            <div className="grid grid-cols-2 gap-3 mt-4">
+              <div>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">سرعة الرد</span>
+                  <span className={getScoreColor(official.response_speed_score)}>
+                    {official.response_speed_score || 0}/20
+                  </span>
+                </div>
+                <Progress value={(official.response_speed_score || 0) * 5} />
               </div>
-              <p className="text-center text-muted-foreground">الجهات الأكثر التزامًا بالمساءلة والشفافية</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {topOfficials.map((official) => (
-                  <div 
-                    key={official.rank}
-                    className="flex items-center gap-4 p-4 bg-secondary rounded-lg border border-border hover:border-green-500/50 transition-colors"
-                  >
-                    <div className="flex-shrink-0 w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      {official.rank}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-foreground mb-2">{official.name}</h3>
-                      <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground">
-                        <div>السرعة: {official.speed}/5</div>
-                        <div>التنفيذ: {official.execution}/5</div>
-                        <div>المتابعة: {official.followup}/5</div>
-                        <div>الاحترام: {official.respect}/5</div>
-                      </div>
-                    </div>
-                    <div className="text-left">
-                      <p className={`text-3xl font-bold ${getScoreColor(official.score)}`}>{official.score}</p>
-                      <p className="text-xs text-muted-foreground">من 20</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
-        {/* Bottom 10 Ignoring Officials */}
-        <div>
-          <Card className="bg-card border-alert/50">
-            <CardHeader>
-              <div className="flex items-center justify-center gap-3 mb-2">
-                <TrendingDown className="h-6 w-6 text-alert" />
-                <CardTitle className="text-2xl text-center">أكثر 10 جهات تجاهلاً</CardTitle>
+              <div>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">الاحترام</span>
+                  <span className={getScoreColor(official.respect_score)}>
+                    {official.respect_score || 0}/20
+                  </span>
+                </div>
+                <Progress value={(official.respect_score || 0) * 5} />
               </div>
-              <p className="text-center text-muted-foreground">الجهات التي تحتاج إلى تحسين أدائها</p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {bottomOfficials.map((official) => (
-                  <div 
-                    key={official.rank}
-                    className="flex items-center gap-4 p-4 bg-secondary rounded-lg border border-border hover:border-alert/50 transition-colors"
-                  >
-                    <div className="flex-shrink-0 w-12 h-12 bg-alert rounded-full flex items-center justify-center text-white font-bold text-xl">
-                      {official.rank}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-lg text-foreground mb-2">{official.name}</h3>
-                      <div className="grid grid-cols-4 gap-2 text-xs text-muted-foreground">
-                        <div>السرعة: {official.speed}/5</div>
-                        <div>التنفيذ: {official.execution}/5</div>
-                        <div>المتابعة: {official.followup}/5</div>
-                        <div>الاحترام: {official.respect}/5</div>
-                      </div>
-                    </div>
-                    <div className="text-left">
-                      <p className={`text-3xl font-bold ${getScoreColor(official.score)}`}>{official.score}</p>
-                      <p className="text-xs text-muted-foreground">من 20</p>
-                    </div>
-                  </div>
-                ))}
+
+              <div>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">التنفيذ</span>
+                  <span className={getScoreColor(official.execution_score)}>
+                    {official.execution_score || 0}/20
+                  </span>
+                </div>
+                <Progress value={(official.execution_score || 0) * 5} />
               </div>
-            </CardContent>
-          </Card>
+
+              <div>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-muted-foreground">المتابعة</span>
+                  <span className={getScoreColor(official.followup_score)}>
+                    {official.followup_score || 0}/20
+                  </span>
+                </div>
+                <Progress value={(official.followup_score || 0) * 5} />
+              </div>
+            </div>
+          </div>
         </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-muted-foreground">جاري التحميل...</p>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src={logo} alt="Logo" className="h-10" />
+            <div>
+              <h1 className="text-2xl font-bold">لوحة تقييم المسؤولين</h1>
+              <p className="text-xs text-muted-foreground">Scoreboard</p>
+            </div>
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/">
+              <ArrowRight className="ml-2 h-4 w-4" />
+              الصفحة الرئيسية
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="mb-8">
+          <div className="flex flex-wrap gap-2 mb-4">
+            {regions.map((region) => (
+              <Button
+                key={region.value}
+                variant={selectedRegion === region.value ? 'default' : 'outline'}
+                onClick={() => setSelectedRegion(region.value)}
+                size="sm"
+              >
+                {region.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {filteredOfficials.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">لا توجد بيانات متاحة للمنطقة المختارة</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Tabs defaultValue="top" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsTrigger value="top" className="gap-2">
+                <Award className="h-4 w-4" />
+                الأفضل أداءً
+              </TabsTrigger>
+              <TabsTrigger value="poor" className="gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                الأسوأ أداءً
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="top" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-500" />
+                    أفضل 10 مسؤولين
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+              {topPerformers.map((official, index) => (
+                <OfficialCard key={official.id} official={official} rank={index + 1} />
+              ))}
+            </TabsContent>
+
+            <TabsContent value="poor" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingDown className="h-5 w-5 text-red-500" />
+                    أسوأ 10 مسؤولين
+                  </CardTitle>
+                </CardHeader>
+              </Card>
+              {poorPerformers.map((official, index) => (
+                <OfficialCard key={official.id} official={official} rank={index + 1} />
+              ))}
+            </TabsContent>
+          </Tabs>
+        )}
+      </main>
     </div>
   );
 };
