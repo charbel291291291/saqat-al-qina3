@@ -14,16 +14,429 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      case_evidence: {
+        Row: {
+          case_id: string
+          created_at: string
+          file_type: string
+          file_url: string
+          id: string
+          thumbnail_url: string | null
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          file_type: string
+          file_url: string
+          id?: string
+          thumbnail_url?: string | null
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          file_type?: string
+          file_url?: string
+          id?: string
+          thumbnail_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_evidence_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_officials: {
+        Row: {
+          assigned_at: string
+          case_id: string
+          id: string
+          official_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          case_id: string
+          id?: string
+          official_id: string
+        }
+        Update: {
+          assigned_at?: string
+          case_id?: string
+          id?: string
+          official_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_officials_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_officials_official_id_fkey"
+            columns: ["official_id"]
+            isOneToOne: false
+            referencedRelation: "officials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_timeline_events: {
+        Row: {
+          case_id: string
+          created_at: string
+          created_by: string | null
+          event_description: string
+          event_type: string
+          id: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          created_by?: string | null
+          event_description: string
+          event_type: string
+          id?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          created_by?: string | null
+          event_description?: string
+          event_type?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_timeline_events_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          admin_notes: string | null
+          category: Database["public"]["Enums"]["case_category"]
+          created_at: string
+          detailed_description: string
+          id: string
+          municipality: string | null
+          published_at: string | null
+          region: Database["public"]["Enums"]["region"]
+          rejection_reason: string | null
+          resolved_at: string | null
+          short_description: string
+          status: Database["public"]["Enums"]["case_status"]
+          submitted_by: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          category: Database["public"]["Enums"]["case_category"]
+          created_at?: string
+          detailed_description: string
+          id?: string
+          municipality?: string | null
+          published_at?: string | null
+          region: Database["public"]["Enums"]["region"]
+          rejection_reason?: string | null
+          resolved_at?: string | null
+          short_description: string
+          status?: Database["public"]["Enums"]["case_status"]
+          submitted_by?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          category?: Database["public"]["Enums"]["case_category"]
+          created_at?: string
+          detailed_description?: string
+          id?: string
+          municipality?: string | null
+          published_at?: string | null
+          region?: Database["public"]["Enums"]["region"]
+          rejection_reason?: string | null
+          resolved_at?: string | null
+          short_description?: string
+          status?: Database["public"]["Enums"]["case_status"]
+          submitted_by?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      comments: {
+        Row: {
+          case_id: string
+          comment_text: string
+          created_at: string
+          flag_reason: string | null
+          id: string
+          is_approved: boolean | null
+          is_flagged: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          case_id: string
+          comment_text: string
+          created_at?: string
+          flag_reason?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_flagged?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          case_id?: string
+          comment_text?: string
+          created_at?: string
+          flag_reason?: string | null
+          id?: string
+          is_approved?: boolean | null
+          is_flagged?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      institutions: {
+        Row: {
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          region: Database["public"]["Enums"]["region"] | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name: string
+          region?: Database["public"]["Enums"]["region"] | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          region?: Database["public"]["Enums"]["region"] | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      official_responses: {
+        Row: {
+          attachments: Json | null
+          case_id: string
+          created_at: string
+          id: string
+          official_id: string
+          response_date: string
+          response_text: string
+        }
+        Insert: {
+          attachments?: Json | null
+          case_id: string
+          created_at?: string
+          id?: string
+          official_id: string
+          response_date?: string
+          response_text: string
+        }
+        Update: {
+          attachments?: Json | null
+          case_id?: string
+          created_at?: string
+          id?: string
+          official_id?: string
+          response_date?: string
+          response_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "official_responses_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "official_responses_official_id_fkey"
+            columns: ["official_id"]
+            isOneToOne: false
+            referencedRelation: "officials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      officials: {
+        Row: {
+          created_at: string
+          execution_score: number | null
+          followup_score: number | null
+          id: string
+          image_url: string | null
+          institution_id: string | null
+          name: string
+          overall_score: number | null
+          position: string
+          region: Database["public"]["Enums"]["region"]
+          respect_score: number | null
+          response_speed_score: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          execution_score?: number | null
+          followup_score?: number | null
+          id?: string
+          image_url?: string | null
+          institution_id?: string | null
+          name: string
+          overall_score?: number | null
+          position: string
+          region: Database["public"]["Enums"]["region"]
+          respect_score?: number | null
+          response_speed_score?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          execution_score?: number | null
+          followup_score?: number | null
+          id?: string
+          image_url?: string | null
+          institution_id?: string | null
+          name?: string
+          overall_score?: number | null
+          position?: string
+          region?: Database["public"]["Enums"]["region"]
+          respect_score?: number | null
+          response_speed_score?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "officials_institution_id_fkey"
+            columns: ["institution_id"]
+            isOneToOne: false
+            referencedRelation: "institutions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "user" | "admin" | "investigator"
+      case_category:
+        | "municipality"
+        | "corruption"
+        | "environment"
+        | "education"
+        | "health"
+        | "electricity"
+        | "water"
+        | "roads"
+        | "other"
+      case_status:
+        | "draft"
+        | "pending_review"
+        | "published"
+        | "sent_to_official"
+        | "waiting_response"
+        | "official_replied"
+        | "follow_up"
+        | "resolved"
+        | "ignored"
+        | "closed"
+      region:
+        | "beirut"
+        | "mount_lebanon"
+        | "north"
+        | "south"
+        | "bekaa"
+        | "nabatieh"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +563,39 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["user", "admin", "investigator"],
+      case_category: [
+        "municipality",
+        "corruption",
+        "environment",
+        "education",
+        "health",
+        "electricity",
+        "water",
+        "roads",
+        "other",
+      ],
+      case_status: [
+        "draft",
+        "pending_review",
+        "published",
+        "sent_to_official",
+        "waiting_response",
+        "official_replied",
+        "follow_up",
+        "resolved",
+        "ignored",
+        "closed",
+      ],
+      region: [
+        "beirut",
+        "mount_lebanon",
+        "north",
+        "south",
+        "bekaa",
+        "nabatieh",
+      ],
+    },
   },
 } as const
