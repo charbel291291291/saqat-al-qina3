@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { FileText, Users, TrendingUp, AlertTriangle } from "lucide-react";
+import { FileText, Users, TrendingUp, AlertTriangle, LogIn, LogOut } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
+  const { user, signOut, isAdmin } = useAuth();
   return (
     <div className="min-h-screen bg-background font-cairo">
       {/* Navigation */}
@@ -17,9 +19,34 @@ const Index = () => {
               <p className="text-xs text-muted-foreground">Saqat Al Qina3</p>
             </div>
           </div>
-          <Link to="/about">
-            <Button variant="ghost" size="sm">من نحن؟</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link to="/about">
+              <Button variant="ghost" size="sm">من نحن؟</Button>
+            </Link>
+            {user ? (
+              <>
+                {isAdmin() && (
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/admin">لوحة الإدارة</Link>
+                  </Button>
+                )}
+                <Button asChild size="sm">
+                  <Link to="/submit">قدّم قضية</Link>
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => signOut()}>
+                  <LogOut className="ml-2 h-4 w-4" />
+                  خروج
+                </Button>
+              </>
+            ) : (
+              <Button asChild size="sm">
+                <Link to="/auth">
+                  <LogIn className="ml-2 h-4 w-4" />
+                  دخول
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
       </nav>
 
