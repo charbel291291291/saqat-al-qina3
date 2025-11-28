@@ -123,6 +123,7 @@ export type Database = {
       cases: {
         Row: {
           admin_notes: string | null
+          assigned_journalist: string | null
           category: Database["public"]["Enums"]["case_category"]
           created_at: string
           detailed_description: string
@@ -140,6 +141,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          assigned_journalist?: string | null
           category: Database["public"]["Enums"]["case_category"]
           created_at?: string
           detailed_description: string
@@ -157,6 +159,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          assigned_journalist?: string | null
           category?: Database["public"]["Enums"]["case_category"]
           created_at?: string
           detailed_description?: string
@@ -172,7 +175,50 @@ export type Database = {
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cases_assigned_journalist_fkey"
+            columns: ["assigned_journalist"]
+            isOneToOne: false
+            referencedRelation: "journalists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          assigned_journalist: string | null
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_journalist?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_journalist?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "categories_assigned_journalist_fkey"
+            columns: ["assigned_journalist"]
+            isOneToOne: false
+            referencedRelation: "journalists"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       comments: {
         Row: {
@@ -244,6 +290,42 @@ export type Database = {
           name?: string
           region?: Database["public"]["Enums"]["region"] | null
           type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      journalists: {
+        Row: {
+          active: boolean
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          phone_number: string
+          role: Database["public"]["Enums"]["journalist_role"]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          phone_number: string
+          role?: Database["public"]["Enums"]["journalist_role"]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          phone_number?: string
+          role?: Database["public"]["Enums"]["journalist_role"]
           updated_at?: string
         }
         Relationships: []
@@ -430,6 +512,7 @@ export type Database = {
         | "resolved"
         | "ignored"
         | "closed"
+      journalist_role: "investigator" | "journalist" | "editor"
       region:
         | "beirut"
         | "mount_lebanon"
@@ -588,6 +671,7 @@ export const Constants = {
         "ignored",
         "closed",
       ],
+      journalist_role: ["investigator", "journalist", "editor"],
       region: [
         "beirut",
         "mount_lebanon",
