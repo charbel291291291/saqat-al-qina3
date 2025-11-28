@@ -1,1 +1,4 @@
 project_id = "pnxrurpkwphadagvsvef"
+
+[functions.notify-journalist]
+verify_jwt = true
