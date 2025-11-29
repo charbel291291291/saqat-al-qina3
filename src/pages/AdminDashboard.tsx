@@ -145,6 +145,30 @@ export default function AdminDashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Quick Access Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card className="hover:border-primary cursor-pointer" onClick={() => navigate('/admin-team')}>
+            <CardHeader>
+              <CardTitle className="text-lg">إدارة الفريق</CardTitle>
+              <CardDescription>إدارة الصحفيين والفئات</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:border-primary cursor-pointer" onClick={() => navigate('/admin/officials')}>
+            <CardHeader>
+              <CardTitle className="text-lg">إدارة المسؤولين</CardTitle>
+              <CardDescription>المسؤولين الحكوميين ونظام التقييم</CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:border-primary cursor-pointer" onClick={() => navigate('/scoreboard')}>
+            <CardHeader>
+              <CardTitle className="text-lg">لوحة النقاط</CardTitle>
+              <CardDescription>تقييمات المسؤولين</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+
         <Tabs defaultValue="pending" className="space-y-6">
           <TabsList>
             <TabsTrigger value="pending">قيد المراجعة ({pendingCases.length})</TabsTrigger>

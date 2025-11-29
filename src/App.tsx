@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import JournalistDashboard from "./pages/JournalistDashboard";
 import AdminTeam from "./pages/AdminTeam";
+import AdminOfficials from "./pages/AdminOfficials";
 import CaseDetails from "./pages/CaseDetails";
 import NotFound from "./pages/NotFound";
 
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/scoreboard" element={<Scoreboard />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/officials" element={<AdminOfficials />} />
             <Route path="/journalist-dashboard" element={<JournalistDashboard />} />
             <Route path="/admin-team" element={<AdminTeam />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
