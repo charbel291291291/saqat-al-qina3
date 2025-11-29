@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import JournalistDashboard from "./pages/JournalistDashboard";
 import AdminTeam from "./pages/AdminTeam";
+import CaseDetails from "./pages/CaseDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/about" element={<About />} />
             <Route path="/cases" element={<Cases />} />
+            <Route path="/case/:id" element={<CaseDetails />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/submit-case" element={<SubmitCase />} />
             <Route path="/scoreboard" element={<Scoreboard />} />
