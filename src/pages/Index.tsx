@@ -50,6 +50,9 @@ const Index = () => {
             </Link>
             {user ? (
               <>
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/dashboard">قضاياي</Link>
+                </Button>
                 {isAdmin() && (
                   <Button asChild variant="outline" size="sm">
                     <Link to="/admin">لوحة الإدارة</Link>
